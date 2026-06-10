@@ -160,7 +160,9 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
               controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (context, index) =>
-                  MessageBubble(message: _messages[index]),
+                  MessageBubble(message: _messages[index],
+                    currentUserId: 'user-demo',
+                  ),
             ),
           ),
           ChatInputBar(
