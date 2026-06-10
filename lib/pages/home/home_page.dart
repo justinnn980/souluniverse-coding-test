@@ -89,7 +89,7 @@ class _HomeBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meState = context.read<MeState>();
+    final meState = context.watch<MeState>();
 
     return ListView(
       padding: const EdgeInsets.all(16),
