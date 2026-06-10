@@ -50,6 +50,11 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
 
     _messages = msgs;
 
+    setState(() {
+      _messages = msgs;
+      _isLoadingMore = false;
+    });
+
     _isLoadingMore = false;
     _scrollToBottom();
   }
