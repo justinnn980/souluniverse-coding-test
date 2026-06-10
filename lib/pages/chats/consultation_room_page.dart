@@ -55,7 +55,6 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
       _isLoadingMore = false;
     });
 
-    _isLoadingMore = false;
     _scrollToBottom();
   }
 
@@ -104,8 +103,27 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _controller.clear();
+
+    setState(() => _isSending = true);
     await ChatsRepository.instance.sendMessage(widget.roomId, text);
+
+    final newMessage = ChatMessage(
+      id: 'local-${DateTime.now().millisecondsSinceEpoch}',
+      roomId: widget.roomId,
+      senderId: 'user-demo',
+      content: text,
+      sentAt: DateTime.now(),
+      isRead: false,
+    );
+
+    setState(() {
+      _messages = [..._messages, newMessage];
+      _isSending = false;
+    });
+
+    _scrollToBottom();
   }
+
 
   void _scrollToBottom() {
     if (!_scrollController.hasClients) return;
@@ -142,7 +160,9 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
               controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (context, index) =>
-                  MessageBubble(message: _messages[index]),
+                  MessageBubble(message: _messages[index],
+                    currentUserId: 'user-demo',
+                  ),
             ),
           ),
           ChatInputBar(
