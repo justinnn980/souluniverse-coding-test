@@ -8,11 +8,13 @@
 
 | # | 파일 경로 | 수정 내용 | 원인 분석 |
 |---|-----------|-----------|-----------|
-| 1 |home_page.dart | _HomeBody의 context watch로 변경|기존에는 상태를 구독하지 않는 context를 사용해 데이터 변경 시 UI가 다시 빌드되지 않았다. watch로 변경해서 상태 변경을 감지|
-| 2 |me_state.dart | removeFavoriteCounselor의 where 조건을 !=으로 수정 | where는 제거가 아니라 필터이기 때문에 남길 조건을 작성하기위해서 ==가 아닌 != 로 변경|
-| 3 |consultation_room_page.dart |setState 추가 |바뀐 변수 값을 Widget에게 알려주는 함수가 없어서 추가|
-| 4 |consultation_room_page.dart | _sendMessage에서 전송 후 _messages에 메시지 추가| Repository에 전송 요청만 하고 화면의 _messages에 추가하는 코드가 없어서 메시지를 보내도 채팅창에 표시되지 않았다|
-| 5 |consultation_room_page.dart | MessageBubble에 currentUserId 전달| currentUserId가 null이라 _isMine이 항상 false가 되어 내가 보낸 메시지도 상대방 메시지처럼 왼쪽에 표시됐다|
+| 1 | home_page.dart | _HomeBody의 context.watch로 변경 | context.read는 상태를 구독하지 않아 MeState가 변경돼도 UI가 리빌드되지 않았다. watch로 변경해 상태 변경을 감지하도록 했다 |
+| 2 | me_state.dart | removeFavoriteCounselor의 where 조건을 !=으로 수정 | where는 남길 조건을 쓰는 필터라 ==는 삭제 대상만 남기는 반전 동작을 했다. !=으로 수정해 삭제 대상을 제외한 나머지를 유지하도록 했다 |
+| 3 | consultation_room_page.dart | _loadInitialMessages, _loadMoreMessages에 setState 추가 | 변수를 변경해도 setState 없이는 Flutter가 인지하지 못해 로딩 인디케이터와 메시지 목록이 갱신되지 않았다 |
+| 4 | consultation_room_page.dart | _connectFirestore listen에 setState 및 mounted 체크 추가 | 스트림 콜백에서 setState가 없어 실시간 메시지가 화면에 표시되지 않았고, mounted 체크가 없어 화면 종료 후 콜백이 도착하면 에러가 발생했다 |
+| 5 | consultation_room_page.dart | dispose에 _messageSubscription.cancel() 추가 | 화면 종료 시 스트림을 취소하지 않아 메모리 누수와 dispose 후 setState 호출 에러가 발생했다 |
+| 6 | consultation_room_page.dart | _sendMessage에서 전송 후 _messages에 메시지 추가 | Repository에 전송 요청만 하고 화면의 _messages에 추가하는 코드가 없어서 메시지를 보내도 채팅창에 표시되지 않았다 |
+| 7 | consultation_room_page.dart | MessageBubble에 currentUserId 전달 | currentUserId가 null이라 _isMine이 항상 false가 되어 내가 보낸 메시지도 상대방 메시지처럼 왼쪽에 표시됐다 |
 
 ### 기타 의견
 
