@@ -29,7 +29,7 @@ class MeState extends ChangeNotifier {
 
   Future<void> removeFavoriteCounselor(String counselorId) async {
     _favoriteCounselorIds = _favoriteCounselorIds
-        .where((id) => id == counselorId)
+        .where((id) => id != counselorId)
         .toList();
     await UserRepository.instance.removeFavorite(counselorId);
     notifyListeners();
