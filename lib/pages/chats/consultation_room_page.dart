@@ -43,12 +43,12 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
   }
 
   Future<void> _loadInitialMessages() async {
-    _isLoadingMore = true;
+    setState(() {
+      _isLoadingMore = true;
+    });
 
     final msgs =
         await ChatsRepository.instance.fetchMessages(widget.roomId, page: 0);
-
-    _messages = msgs;
 
     setState(() {
       _messages = msgs;
@@ -77,7 +77,10 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
         isRead: false,
       ),
     ).listen((msg) {
-      _messages.add(msg);
+      if (!mounted) return;
+      setState(() {
+        _messages = [..._messages, msg];
+      });
       _scrollToBottom();
     });
   }
@@ -89,14 +92,16 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
   }
 
   Future<void> _loadMoreMessages() async {
-    _isLoadingMore = true;
+    setState(() {
+      _isLoadingMore = true;
+    });
     _page++;
     final older =
         await ChatsRepository.instance.fetchMessages(widget.roomId, page: _page);
     setState(() {
-      _messages.insertAll(0, older);
+      _messages = [...older, ..._messages];
+      _isLoadingMore = false;
     });
-    _isLoadingMore = false;
   }
 
   Future<void> _sendMessage() async {
@@ -156,13 +161,18 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
         children: [
           if (_isLoadingMore) const LinearProgressIndicator(),
           Expanded(
-            child: ListView.builder(
+            child: Scrollbar(
               controller: _scrollController,
-              itemCount: _messages.length,
-              itemBuilder: (context, index) =>
-                  MessageBubble(message: _messages[index],
-                    currentUserId: 'user-demo',
-                  ),
+              thumbVisibility: true,
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: _messages.length,
+                itemBuilder: (context, index) =>
+                    MessageBubble(
+                      message: _messages[index],
+                      currentUserId: 'user-demo',
+                    ),
+              ),
             ),
           ),
           ChatInputBar(
@@ -179,6 +189,7 @@ class _ConsultationRoomPageState extends State<ConsultationRoomPage> {
 
   @override
   void dispose() {
+    _messageSubscription?.cancel();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();

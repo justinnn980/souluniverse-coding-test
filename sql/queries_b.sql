@@ -68,10 +68,19 @@ GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
 ORDER BY consult_date;
 
 -- [개선된 쿼리] 여기에 작성하세요
-
+SELECT
+  DATE_FORMAT(created_at, '%Y-%m-%d') AS consult_date,
+  COUNT(*)                            AS consult_count,
+  AVG(total_billed_cookies)           AS avg_cookies
+FROM chat_rooms
+WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+  AND status = 'ended'
+GROUP BY DATE(created_at)
+ORDER BY consult_date;
 
 -- [CREATE INDEX] 여기에 작성하세요
-
+CREATE INDEX idx_chatrooms_status_created
+  ON chat_rooms (status, created_at);
 
 
 -- ════════════════════════════════════════════════════════════
@@ -96,6 +105,26 @@ WHERE counselor_id = ?
   AND status = 'ended';
 
 -- [개선된 단일 쿼리] 여기에 작성하세요
-
+SELECT
+  u.id          AS user_id,
+  u.nickname,
+  u.gender,
+  u.birth_year,
+  COUNT(cr.id)  AS total_chat_count
+FROM counselors c
+  JOIN users u
+    ON c.user_id = u.id
+  LEFT JOIN chat_rooms cr
+    ON cr.counselor_id = c.id
+    AND cr.status = 'ended'
+WHERE c.is_online = 1
+  AND u.status = 'active'
+GROUP BY u.id, u.nickname, u.gender, u.birth_year
+ORDER BY total_chat_count DESC;
 
 -- [CREATE INDEX] 여기에 작성하세요
+CREATE INDEX idx_chatrooms_counselor_status
+  ON chat_rooms (counselor_id, status);
+
+CREATE INDEX idx_counselors_isonline
+  ON counselors (is_online);
